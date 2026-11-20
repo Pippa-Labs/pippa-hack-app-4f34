@@ -39,135 +39,265 @@ persistence: none
 # It does not decide who owns the app, and nothing in this file does. Pippa
 # Labs created this repository for your Pippa account, so every app published
 # from it is yours. docs/REVIEW_AND_SHARING.md is the whole story.
-app_author_name: ""
+app_author_name: "Andy"
 
 app:
-  # Filled in for you. A new repository replaces this placeholder within a
-  # minute of being created, from the repository's name, and commits it as
-  # github-actions[bot] (.github/workflows/setup.yml). Until then the build
-  # publishes nothing.
-  #
-  # It must be `hack.` + this repository's name with `pippa-hack-` removed and
-  # every hyphen turned into an underscore:
-  #
-  #     Pippa-Labs/pippa-hack-tide-times  ->  hack.tide_times
-  #
-  # Hyphens are not valid in an app id anywhere. `git remote get-url origin`
-  # tells you the repository name.
+  # Set from the repository name; it must stay like this.
   id: hack.app_4f34
-  name: Days Until
-  # The version you are pushing. Pippa keeps a copy of the code of every
-  # version, so pushing a new version never changes an older one: the approved
-  # version keeps working for everyone while you try the next.
-  #
-  # Until you submit a version for review you can push it again under the
-  # same number, as often as you like, and it is replaced. From the moment
-  # you press Submit for review it is frozen, so change this number before
-  # your next push (0.1.0 -> 0.1.1), or the push is refused.
-  #
-  # Three numbers: 0.1.0, not 0.1 and not v0.1.0. Pippa never compares them:
-  # your "latest" version is simply the one you pushed most recently.
-  # docs/REVIEW_AND_SHARING.md says which version you, your testers and
-  # everybody else get.
+  name: MealMind
+  # Bump this before the next push once a version is submitted for review.
   version: 0.1.0
-  # One or two sentences, written for someone deciding whether to install it.
-  # Say what it does and what it sends anywhere. Never use the word "by" — the
-  # badge Pippa shows is parsed from "[via <name> <version> by <author name>]"
-  # (the author name is `app_author_name` above) and splits on the first "by".
+  # Never use the word "b-y" here: the badge is parsed on it.
   summary: >-
-    Works out how many days there are until a date you name, and says which
-    day of the week it falls on.
+    Finds recipes for the ingredients you have, within your time, budget and
+    diet, with calories and protein. Uses its own recipe cards and public
+    USDA nutrition data; costs come only from prices you give.
 
-# Who can install it. `personal` means a person's own Pippa.
 agent_types:
   - personal
 
-# ── Outcomes: the things your app can be asked to do ─────────────────────────
-#
-# An outcome is one job. Pippa picks between your outcomes — and between your
-# app and every other app — by comparing the user's message against `summary`
-# and `example_phrases`. So those two fields are not documentation; they are
-# the behaviour that decides whether your app is used at all.
-#
-# Writing example phrases well:
-#   * Write how a PERSON would ask, not how you would name a function.
-#   * Use carrier words ("how long until"), not one specific subject —
-#     the subject changes every time and only dilutes the match.
-#   * Give each outcome its own words. Two outcomes sharing vocabulary tie,
-#     and a tie is resolved by a model guessing.
-#   * Avoid words another app owns. "today", "tomorrow", "this week" and
-#     "my calendar" belong to Pippa Diary; a phrase using them will lose.
-
 outcomes:
-  - id: days.until
-    summary: Count the days between now and a date, and name the weekday
+  - id: meal.match
+    summary: >-
+      Pick a recipe from the ingredients, cooking time, budget, diet,
+      allergens and nutrition targets in the message
     example_phrases:
-      - how many days until
-      - how long until
-      - how many sleeps until
-      - days left until
-      - what day of the week is
-    # What Pippa extracts from the user's message and hands you. A model reads
-    # `description` to do that extraction, so write it as an instruction to
-    # whoever is filling the field in.
+      - what can i cook with these ingredients
+      - quick meal i can make in 20 minutes
+      - high protein recipe under 600 calories
+      - cheap dinner for two under five pounds
+      - recipe ideas with what's in my fridge
+      - nut free dinner idea with rice and eggs
+      - student meal on a tight budget
+      - different dinner from what i ate yesterday
     inputs:
-      # `required: false`, although the app is useless without a date, and
-      # that is deliberate. A missing REQUIRED input is refused inside the
-      # runtime before your code runs, and the user is shown a message that
-      # blames your app for a question they asked perfectly reasonably. An
-      # optional input simply arrives absent, your code notices, and you
-      # raise an error that says something true. Keep `required: true` for
-      # inputs the extractor can always supply.
-      - name: date
+      - name: ingredients
+        type: array
+        item_type: string
+        required: false
+        description: >-
+          The food the person says they already have, one ingredient per item,
+          keeping any amount they gave with it ("3 eggs", "200 g rice",
+          "two tomatoes"). Copy their words; do not add ingredients they did not
+          name. Leave this out if they named none.
+      - name: max_minutes
+        type: integer
+        required: false
+        description: >-
+          The most minutes they have to cook, if they said ("20 minutes",
+          "half an hour" is 30). Leave this out if they gave no time. Never
+          guess a typical time.
+      - name: servings
+        type: integer
+        required: false
+        description: >-
+          How many people or portions they are cooking for, if they said ("for
+          two" is 2). Leave this out if they did not say. Never guess.
+      - name: budget
+        type: number
+        required: false
+        description: >-
+          The amount of money they want to spend, as a plain number without
+          the currency symbol ("under £5" is 5). Leave this out if they named
+          no budget. Never guess one.
+      - name: budget_per_person
+        type: boolean
+        required: false
+        description: >-
+          True only if they said the budget is per person or per portion ("£2
+          each"). Leave this out if they did not say so.
+      - name: currency
         type: string
         required: false
         description: >-
-          The target date, as the user wrote it — for example "25 December",
-          "2027-01-01" or "next Friday". If the message does not name a date,
-          return an empty string rather than guessing.
-      - name: timezone
-        type: timezone
+          The currency of their budget or prices, as a code such as GBP, USD,
+          EUR or CNY, if they gave one or used its symbol. Return an empty
+          string rather than guessing.
+      - name: prices
+        type: array
+        item_type: string
         required: false
-        description: The user's time zone, so "today" means their today.
-    # What you promise to return. Returning anything else is refused; omitting
-    # a declared field is refused too. Keep it small and specific.
+        description: >-
+          Prices they gave for ingredients, one per item, each with the pack
+          size they stated, copied in their words ("eggs £1.80 for 6", "rice
+          1.20 per kg", "tomatoes 30p each"). Leave this out if they gave no
+          prices. Never invent or look up a price.
+      - name: diet
+        type: array
+        item_type: string
+        required: false
+        description: >-
+          Any diet they follow, if they said: vegetarian, vegan, pescatarian,
+          no pork, no beef, gluten free, dairy free. Leave this out if they
+          named none. Never guess a diet.
+      - name: allergens
+        type: array
+        item_type: string
+        required: false
+        description: >-
+          Every allergy or intolerance they mentioned, one per item ("peanuts",
+          "milk", "gluten", "sesame"). Include all of them. Leave this out if
+          they mentioned none. Never guess.
+      - name: exclude
+        type: array
+        item_type: string
+        required: false
+        description: >-
+          Foods they said they do not want or dislike, one per item
+          ("mushrooms", "no chilli"). Leave this out if they named none.
+      - name: min_protein_g
+        type: number
+        required: false
+        description: >-
+          The least protein they want per serving, in grams, if they named a
+          number ("at least 30 g protein" is 30). Leave this out if they gave
+          no number. Never guess a target.
+      - name: max_calories
+        type: number
+        required: false
+        description: >-
+          The most calories (kcal) they want per serving, if they named a
+          number ("under 600 calories" is 600). Leave this out if they gave no
+          number. Never guess a limit.
+      - name: recent_meals
+        type: array
+        item_type: string
+        required: false
+        description: >-
+          Meals they say they ate recently, in this message only, one per item
+          ("egg fried rice", "pasta last night" is "pasta"). Leave this out if
+          they mentioned none.
     output:
-      - name: days
+      - name: status
+        type: string
+        description: '"matched" when a recipe fits, "no_match" when nothing does.'
+      - name: reasons
+        type: array
+        item_type: string
+        description: Why the top pick ranked first, one scoring rule per line, with its points.
+      - name: alternatives
+        type: array
+        item_type: string
+        description: Up to two runners-up, each one line with time, what to buy and nutrition.
+      - name: excluded
+        type: array
+        item_type: string
+        description: Recipes ruled out, each with the hard rule it broke.
+      - name: limitations
+        type: array
+        item_type: string
+        description: What the answer assumes or cannot know. Always pass these on.
+      - name: data_sources
+        type: array
+        item_type: string
+        description: Where the recipes, nutrition and prices came from.
+      - name: budget_status
+        type: string
+        description: within_budget, over_budget, cannot_verify or no_budget_given.
+      - name: top_pick
+        type: string
+        required: false
+        description: The recommended recipe's name.
+      - name: top_pick_source
+        type: string
+        required: false
+        description: Which source the recipe comes from.
+      - name: top_pick_link
+        type: string
+        required: false
+        description: The recipe's page, for TheMealDB recipes only.
+      - name: top_pick_servings
         type: integer
-        description: How many whole days until the date. Negative if it has passed.
-      - name: target_date
+        required: false
+        description: The number of servings the amounts are for.
+      - name: top_pick_minutes
+        type: integer
+        required: false
+        description: The recipe card's own estimate of the total time.
+      - name: time_basis
         type: string
-        description: The date you actually used, as YYYY-MM-DD.
-      - name: weekday
+        required: false
+        description: Where the time comes from, or that it is unknown.
+      - name: top_pick_ingredients
+        type: array
+        item_type: string
+        required: false
+        description: Every ingredient with its amount for the servings given.
+      - name: top_pick_steps
+        type: array
+        item_type: string
+        required: false
+        description: The method, one step per line.
+      - name: kcal_per_serving
+        type: number
+        required: false
+        description: Estimated kcal for one serving.
+      - name: protein_g_per_serving
+        type: number
+        required: false
+        description: Estimated grams of protein for one serving.
+      - name: nutrition_basis
         type: string
-        description: The day of the week the date falls on.
-      - name: already_passed
-        type: boolean
+        required: false
+        description: How the nutrition was worked out, or that it is unknown.
+      - name: you_have
+        type: array
+        item_type: string
+        required: false
+        description: Ingredients of the pick the person already has.
+      - name: to_buy
+        type: array
+        item_type: string
+        required: false
+        description: What they must buy, with amounts.
+      - name: assumed_staples
+        type: array
+        item_type: string
+        required: false
+        description: Cupboard staples assumed to be at home and left out of the costs.
+      - name: currency
+        type: string
+        required: false
+        description: The currency of every amount of money.
+      - name: budget_total
+        type: number
+        required: false
+        description: The budget for the whole meal, after any per-person budget is multiplied out.
+      - name: spend_now
+        type: number
+        required: false
+        description: Whole packs that must be bought now. Absent when a needed price is missing.
+      - name: used_ingredients_cost
+        type: number
+        required: false
+        description: The share of each pack this meal uses. Absent when a price is missing.
+      - name: cost_per_serving
+        type: number
+        required: false
+        description: used_ingredients_cost divided by the servings.
+      - name: whole_pack_cost
+        type: number
+        required: false
+        description: Every whole pack the recipe needs if bought from scratch.
+      - name: cost_basis
+        type: string
+        required: false
+        description: What each cost means.
+      - name: conflicts
+        type: array
+        item_type: string
+        required: false
+        description: Requests that could not all be met at once, and which rule caused it.
+      - name: unrecognised_inputs
+        type: array
+        item_type: string
+        required: false
+        description: Parts of the request MealMind could not read or apply.
 
-# ── API keys your app needs (this example needs none) ────────────────────────
-#
-# If your app calls an API that needs a key, declare the key here by NAME,
-# and never write the key itself in any file:
-#
-#   app_secrets:
-#     - name: OPENWEATHER_API_KEY        # capitals, digits, underscores
-#       description: "OpenWeather key, used to look up the forecast"
-#       required: true                   # the app cannot answer without it
-#
-# Your code reads it inside handle() with os.environ["OPENWEATHER_API_KEY"].
-# You set the value in Pippa: Apps > Created by me > your app > Keys, and can
-# change it there any time without a push. On your computer it comes from a
-# file called .env, which git never commits. docs/API_APPS.md, "Using API
-# keys", has the rules and an example.
-#
-# ── Things this example does NOT use ─────────────────────────────────────────
-#
-# `connectors:` and `secrets:` declare that your app needs somebody's
-# credentials — a Google account, for instance. Hackathon apps may not use
-# them: registration refuses any app that asks, because granting a stranger's
-# app a real user's credential is not something a workshop can consent to on
-# a user's behalf. Your app's OWN keys are `app_secrets`, above.
-#
-# Your app CAN call the public internet (see docs/HOW_PIPPA_APPS_WORK.md).
-# This repository is public, so a key in any file here is a key anyone can
-# copy: keys only ever go in Pippa and in .env.
+# The app's own key for the optional TheMealDB lookup. Its value is set only
+# in Pippa (Apps > Created by me > MealMind > Keys), never in any file. The
+# app works fully without it.
+app_secrets:
+  - name: THEMEALDB_API_KEY
+    description: "Optional TheMealDB API key, used only to fetch extra recipes from themealdb.com."
+    required: false
