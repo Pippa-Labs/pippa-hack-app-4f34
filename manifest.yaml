@@ -49,9 +49,9 @@ app:
   version: 0.1.0
   # Never use the word "b-y" here: the badge is parsed on it.
   summary: >-
-    Finds recipes for the ingredients you have, within your time, budget and
-    diet, with calories and protein. Uses its own recipe cards and public
-    USDA nutrition data; costs come only from prices you give.
+    Calories, protein and cost per serving for a recipe that fits your
+    ingredients, time, budget and allergies. Nutrition from public USDA data;
+    costs only from prices you give; allergens are hard rules.
 
 agent_types:
   - personal
@@ -59,17 +59,17 @@ agent_types:
 outcomes:
   - id: meal.match
     summary: >-
-      Pick a recipe from the ingredients, cooking time, budget, diet,
-      allergens and nutrition targets in the message
+      Work out calories, protein and cost per serving of a recipe that fits
+      the ingredients, cooking time, budget, diet and allergens in the message
     example_phrases:
-      - what can i cook with these ingredients
-      - quick meal i can make in 20 minutes
-      - high protein recipe under 600 calories
-      - cheap dinner for two under five pounds
-      - recipe ideas with what's in my fridge
-      - nut free dinner idea with rice and eggs
-      - student meal on a tight budget
-      - different dinner from what i ate yesterday
+      - how many calories and protein per serving
+      - high protein recipe with at least 30g protein
+      - cost per serving of a meal for two
+      - recipe safe for my nut allergy
+      - meal under 600 calories with what i have
+      - cheapest dinner i can make with these prices
+      - what can i cook in under 20 minutes
+      - dinner for two under five pounds
     inputs:
       - name: ingredients
         type: array

@@ -67,21 +67,26 @@ Send these **without** `@`, then check the reply carries the
 
 **Should reach MealMind** (declared phrases):
 
-- what can i cook with these ingredients: chicken, rice, onion
-- quick meal i can make in 20 minutes with pasta
-- high protein recipe under 600 calories with eggs
+- how many calories and protein per serving if i cook eggs, rice and tomatoes
+- high protein recipe with at least 30g protein, i have chicken and rice
+- cost per serving of a meal for two: eggs £1.80 for 6, rice £1.20 per kg
 
 **Should reach MealMind** (paraphrases, not declared):
 
-- got some potatoes and cheese, any dinner ideas
-- i only have tofu and spinach, what should i make for tea
-- there's eggs and tomatoes in the fridge, what's for tea
+- i've got tofu and spinach, how much protein would a dinner give me
+- i'm allergic to peanuts, what can i make with noodles and eggs
+- what's the cheapest thing i can cook with pasta if tinned tomatoes are 45p
 
 **Should NOT reach MealMind:**
 
 - why are eggs a good source of protein *(explaining, not finding a recipe)*
 - is pasta healthier than rice *(an opinion)*
 - order me a pizza *(MealMind never orders)*
+
+A plain "what can i cook with eggs and rice" is often answered by Pippa
+herself: suggesting a dish is something she does from memory. MealMind is
+chosen when the question needs its figures (calories, protein, cost per
+serving) or a hard allergen rule.
 
 ## `@MealMind` versus Pippa choosing
 
