@@ -51,7 +51,8 @@ app:
   summary: >-
     Calories, protein and cost per serving for a recipe that fits your
     ingredients, time, budget and allergies. Nutrition from public USDA data;
-    costs only from prices you give; allergens are hard rules.
+    costs only from prices you give. Filters declared allergens;
+    cross-contact cannot be assessed.
 
 agent_types:
   - personal
@@ -65,7 +66,7 @@ outcomes:
       - how many calories and protein per serving
       - high protein recipe with at least 30g protein
       - cost per serving of a meal for two
-      - recipe safe for my nut allergy
+      - filter recipes excluding nuts
       - meal under 600 calories with what i have
       - cheapest dinner i can make with these prices
       - what can i cook in under 20 minutes
